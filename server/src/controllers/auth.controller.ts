@@ -5,6 +5,7 @@ import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '.
 import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/email';
 import { AppError, asyncHandler } from '../middleware';
 import { AuthRequest, UserRole } from '../types';
+import { recordLoginAttempt, isAccountLocked } from '../services/loginTracking.service';
 
 export const signup = asyncHandler(async (req: Request, res: Response) => {
   const { email, password, firstName, lastName, role } = req.body;
@@ -85,20 +86,77 @@ export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
+  const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
+  const userAgent = req.headers['user-agent'];
+  const captchaVerified = (req.body as any)._captchaVerified || false;
+
+  // Check if account is locked
+  const lockStatus = await isAccountLocked(email);
+  if (lockStatus.locked) {
+    await recordLoginAttempt({
+      email,
+      ipAddress,
+      userAgent,
+      success: false,
+      failureReason: 'account_locked',
+      captchaUsed: captchaVerified
+    });
+
+    throw new AppError(429, 'Account temporarily locked due to too many failed login attempts', {
+      lockedUntil: lockStatus.lockoutEnd,
+      minutesRemaining: lockStatus.minutesRemaining
+    });
+  }
 
   const user = await User.findOne({ email });
   if (!user) {
+    await recordLoginAttempt({
+      email,
+      ipAddress,
+      userAgent,
+      success: false,
+      failureReason: 'invalid_credentials',
+      captchaUsed: captchaVerified
+    });
+
     throw new AppError(401, 'Invalid credentials');
   }
 
   const isPasswordValid = await user.comparePassword(password);
   if (!isPasswordValid) {
+    await recordLoginAttempt({
+      email,
+      ipAddress,
+      userAgent,
+      success: false,
+      failureReason: 'invalid_credentials',
+      captchaUsed: captchaVerified
+    });
+
     throw new AppError(401, 'Invalid credentials');
   }
 
   if (!user.verified) {
+    await recordLoginAttempt({
+      email,
+      ipAddress,
+      userAgent,
+      success: false,
+      failureReason: 'email_not_verified',
+      captchaUsed: captchaVerified
+    });
+
     throw new AppError(403, 'Please verify your email before logging in');
   }
+
+  // Record successful login
+  await recordLoginAttempt({
+    email,
+    ipAddress,
+    userAgent,
+    success: true,
+    captchaUsed: captchaVerified
+  });
 
   const accessToken = generateAccessToken({
     userId: user._id,

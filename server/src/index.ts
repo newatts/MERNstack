@@ -10,6 +10,7 @@ import { connectDatabase } from './config/database';
 import { errorHandler } from './middleware';
 import routes from './routes';
 import { initializeSocket } from './socket';
+import { initializeScheduledJobs } from './services/scheduler.service';
 
 // Load environment variables
 dotenv.config();
@@ -70,6 +71,9 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   try {
     await connectDatabase();
+
+    // Initialize scheduled jobs for subscription management
+    initializeScheduledJobs();
 
     httpServer.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

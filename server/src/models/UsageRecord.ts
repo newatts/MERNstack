@@ -17,8 +17,9 @@ const usageRecordSchema = new Schema<IUsageRecord>(
     },
     type: {
       type: String,
-      enum: ['api_call', 'storage', 'message', 'sms', 'ai_compute', 'data_transfer'],
-      required: true
+      enum: ['api_call', 'storage', 'message', 'sms', 'ai_compute', 'data_transfer', 'download', 'file_storage', 'active_time', 'ai_message'],
+      required: true,
+      index: true
     },
     amount: {
       type: Number,
