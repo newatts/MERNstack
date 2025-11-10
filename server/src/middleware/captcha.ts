@@ -134,7 +134,7 @@ export async function checkAccountLockout(
 ): Promise<void> {
   try {
     const { email } = req.body;
-    const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
+    const _ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
 
     if (!email) {
       return next();

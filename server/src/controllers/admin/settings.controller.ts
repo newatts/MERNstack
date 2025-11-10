@@ -5,7 +5,7 @@ import SystemSettings from '../../models/SystemSettings';
 /**
  * Get system settings
  */
-export async function getSystemSettings(req: AuthRequest, res: Response): Promise<void> {
+export async function getSystemSettings(_req: AuthRequest, res: Response): Promise<void> {
   try {
     let settings = await SystemSettings.findOne();
 
@@ -66,7 +66,7 @@ export async function updateSystemSettings(req: AuthRequest, res: Response): Pro
 /**
  * Get CAPTCHA configuration (public endpoint for client)
  */
-export async function getCaptchaConfig(req: AuthRequest, res: Response): Promise<void> {
+export async function getCaptchaConfig(_req: AuthRequest, res: Response): Promise<void> {
   try {
     const settings = await SystemSettings.findOne();
 

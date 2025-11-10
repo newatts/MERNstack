@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate, optionalAuth } from '../../middleware/auth';
+import { authenticate } from '../../middleware/auth';
 import { requirePermission } from '../../middleware/rbac';
 import { Permission } from '../../types';
 import {

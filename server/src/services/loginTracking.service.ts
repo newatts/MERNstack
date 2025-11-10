@@ -145,7 +145,7 @@ export async function isAccountLocked(email: string): Promise<{
 /**
  * Clear failed login attempts for a user (after successful login)
  */
-export async function clearFailedAttempts(email: string): Promise<void> {
+export async function clearFailedAttempts(_email: string): Promise<void> {
   try {
     // We don't actually delete them (for audit purposes), but we could mark them as cleared
     // For now, the time-based window handles this naturally

@@ -3,7 +3,7 @@ import { AuthRequest } from '../types';
 import { AuditLog } from '../models';
 
 export const auditLog = (action: string, resourceType: string) => {
-  return async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  return async (req: AuthRequest, _res: Response, next: NextFunction): Promise<void> => {
     try {
       if (req.user) {
         const resourceId = req.params.id || req.body._id || 'unknown';

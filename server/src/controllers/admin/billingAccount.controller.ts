@@ -1,7 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../../types';
 import { BillingAccount } from '../../models/BillingAccount';
-import User from '../../models/User';
 import {
   createSubscription,
   cancelSubscription,

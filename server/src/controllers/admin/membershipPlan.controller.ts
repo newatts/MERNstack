@@ -143,7 +143,7 @@ export async function deletePlan(req: AuthRequest, res: Response): Promise<void>
 /**
  * Get public membership plans (active plans only, for customer-facing pages)
  */
-export async function getPublicPlans(req: AuthRequest, res: Response): Promise<void> {
+export async function getPublicPlans(_req: AuthRequest, res: Response): Promise<void> {
   try {
     const plans = await MembershipPlan.find({ active: true })
       .select('-createdBy -updatedBy -stripePriceId -stripeProductId')

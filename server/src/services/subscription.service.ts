@@ -1,7 +1,6 @@
 import { BillingAccount } from '../models/BillingAccount';
 import MembershipPlan, { BillingInterval, PlanType } from '../models/MembershipPlan';
 import { UsageRecord } from '../models/UsageRecord';
-import SystemSettings from '../models/SystemSettings';
 import { IBillingAccount } from '../types';
 
 /**
@@ -44,7 +43,7 @@ export function calculateNextBillingDate(
 export async function createSubscription(
   billingAccountId: string,
   membershipPlanId: string,
-  startImmediately: boolean = true
+  _startImmediately: boolean = true
 ): Promise<IBillingAccount | null> {
   try {
     const billingAccount = await BillingAccount.findById(billingAccountId);
