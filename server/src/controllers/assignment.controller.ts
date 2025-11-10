@@ -172,7 +172,8 @@ export const getSubmission = asyncHandler(async (req: AuthRequest, res: Response
   const assignment: any = submission.assignmentId;
 
   // Check if user is the student or an admin of the group
-  const isStudent = submission.studentId._id.toString() === req.user!._id;
+  const studentId: any = submission.studentId;
+  const isStudent = studentId._id.toString() === req.user!._id;
   const group = await Group.findById(assignment.groupId);
   const isAdmin = group?.admins.includes(req.user!._id);
 
