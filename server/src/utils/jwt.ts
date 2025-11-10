@@ -1,7 +1,7 @@
-import jwt from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 
-const JWT_ACCESS_SECRET: string = process.env.JWT_ACCESS_SECRET || 'access-secret-key';
-const JWT_REFRESH_SECRET: string = process.env.JWT_REFRESH_SECRET || 'refresh-secret-key';
+const JWT_ACCESS_SECRET: Secret = process.env.JWT_ACCESS_SECRET || 'access-secret-key';
+const JWT_REFRESH_SECRET: Secret = process.env.JWT_REFRESH_SECRET || 'refresh-secret-key';
 const JWT_ACCESS_EXPIRATION: string = process.env.JWT_ACCESS_EXPIRATION || '15m';
 const JWT_REFRESH_EXPIRATION: string = process.env.JWT_REFRESH_EXPIRATION || '7d';
 
@@ -11,15 +11,17 @@ export interface TokenPayload {
 }
 
 export const generateAccessToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, JWT_ACCESS_SECRET, {
+  const options: SignOptions = {
     expiresIn: JWT_ACCESS_EXPIRATION
-  });
+  };
+  return jwt.sign(payload, JWT_ACCESS_SECRET, options);
 };
 
 export const generateRefreshToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, JWT_REFRESH_SECRET, {
+  const options: SignOptions = {
     expiresIn: JWT_REFRESH_EXPIRATION
-  });
+  };
+  return jwt.sign(payload, JWT_REFRESH_SECRET, options);
 };
 
 export const verifyAccessToken = (token: string): TokenPayload => {
