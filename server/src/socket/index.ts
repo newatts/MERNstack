@@ -1,13 +1,11 @@
-import { Server as SocketServer } from 'socket.io';
+import { Server as SocketServer, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { verifyAccessToken } from '../utils/jwt';
 import { User, Message } from '../models';
 
-interface AuthenticatedSocket extends SocketIOSocket {
+type AuthenticatedSocket = Socket & {
   userId?: string;
-}
-
-import { Socket as SocketIOSocket } from 'socket.io';
+};
 
 export const initializeSocket = (httpServer: HttpServer) => {
   const io = new SocketServer(httpServer, {

@@ -171,6 +171,14 @@ export interface IUser extends Document {
 // Extended Express Request with authenticated user
 export interface AuthRequest extends Request {
   user?: IUser;
+  body: any;
+  params: any;
+  query: any;
+  method: string;
+  path: string;
+  ip?: string;
+  headers: any;
+  get(name: string): string | undefined;
 }
 
 // Group interface
