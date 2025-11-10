@@ -4,6 +4,7 @@ export class AppError extends Error {
   constructor(
     public statusCode: number,
     public message: string,
+    public data?: Record<string, any>,
     public isOperational = true
   ) {
     super(message);
@@ -22,6 +23,7 @@ export const errorHandler = (
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
       error: err.message,
+      ...(err.data && { ...err.data }),
       ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
     });
     return;

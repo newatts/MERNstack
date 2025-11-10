@@ -10,6 +10,7 @@ import {
   getMe
 } from '../controllers/auth.controller';
 import { authenticate, validateRequest } from '../middleware';
+import { verifyCaptchaSignup, verifyCaptchaLogin, checkAccountLockout } from '../middleware/captcha';
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ router.post(
     body('lastName').trim().notEmpty(),
     validateRequest
   ],
+  verifyCaptchaSignup,
   signup
 );
 
@@ -38,6 +40,8 @@ router.post(
     body('password').notEmpty(),
     validateRequest
   ],
+  checkAccountLockout,
+  verifyCaptchaLogin,
   login
 );
 

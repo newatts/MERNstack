@@ -276,8 +276,9 @@ export interface IBillingAccount extends Document {
   _id: string;
   userId: string;
   stripeCustomerId?: string;
-  subscriptionStatus: 'active' | 'inactive' | 'trial' | 'cancelled';
+  subscriptionStatus: 'active' | 'inactive' | 'trial' | 'cancelled' | 'suspended' | 'grace_period';
   subscriptionPlan?: string;
+  membershipPlanId?: string; // Reference to MembershipPlan
   balance: number;
   paymentMethods?: Array<{
     id: string;
@@ -285,6 +286,29 @@ export interface IBillingAccount extends Document {
     last4?: string;
     default: boolean;
   }>;
+
+  // Subscription timing
+  subscriptionStartDate?: Date;
+  subscriptionEndDate?: Date;
+  nextBillingDate?: Date;
+  trialEndDate?: Date;
+
+  // Grace period & suspension
+  gracePeriodEndDate?: Date;
+  suspendedAt?: Date;
+  suspensionReason?: string;
+
+  // Admin overrides
+  billingEnabled: boolean; // Admin can disable billing for specific users
+  freeAccessGranted: boolean; // Admin can grant free access
+  freeAccessReason?: string;
+  freeAccessGrantedBy?: string; // Admin user ID
+  freeAccessGrantedAt?: Date;
+  freeAccessExpiresAt?: Date;
+
+  // Usage tracking for current billing period
+  currentPeriodUsage?: Map<string, number>; // metric -> amount used
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -294,7 +318,7 @@ export interface IUsageRecord extends Document {
   _id: string;
   userId: string;
   billingAccountId: string;
-  type: 'api_call' | 'storage' | 'message' | 'sms' | 'ai_compute' | 'data_transfer';
+  type: 'api_call' | 'storage' | 'message' | 'sms' | 'ai_compute' | 'data_transfer' | 'download' | 'file_storage' | 'active_time' | 'ai_message';
   amount: number;
   unit: string;
   cost: number;

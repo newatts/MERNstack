@@ -6,6 +6,9 @@ import messageRoutes from './message.routes';
 import fileRoutes from './file.routes';
 import assignmentRoutes from './assignment.routes';
 import billingRoutes from './billing.routes';
+import adminSettingsRoutes from './admin/settings.routes';
+import adminMembershipPlanRoutes from './admin/membershipPlan.routes';
+import adminBillingAccountRoutes from './admin/billingAccount.routes';
 
 const router = express.Router();
 
@@ -16,6 +19,11 @@ router.use('/messages', messageRoutes);
 router.use('/files', fileRoutes);
 router.use('/assignments', assignmentRoutes);
 router.use('/billing', billingRoutes);
+
+// Admin routes
+router.use('/admin/settings', adminSettingsRoutes);
+router.use('/admin/membership-plans', adminMembershipPlanRoutes);
+router.use('/admin/billing-accounts', adminBillingAccountRoutes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {
