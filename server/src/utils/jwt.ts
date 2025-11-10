@@ -2,8 +2,8 @@ import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 
 const JWT_ACCESS_SECRET: Secret = process.env.JWT_ACCESS_SECRET || 'access-secret-key';
 const JWT_REFRESH_SECRET: Secret = process.env.JWT_REFRESH_SECRET || 'refresh-secret-key';
-const JWT_ACCESS_EXPIRATION: string = process.env.JWT_ACCESS_EXPIRATION || '15m';
-const JWT_REFRESH_EXPIRATION: string = process.env.JWT_REFRESH_EXPIRATION || '7d';
+const JWT_ACCESS_EXPIRATION = (process.env.JWT_ACCESS_EXPIRATION || '15m') as string | number;
+const JWT_REFRESH_EXPIRATION = (process.env.JWT_REFRESH_EXPIRATION || '7d') as string | number;
 
 export interface TokenPayload {
   userId: string;
