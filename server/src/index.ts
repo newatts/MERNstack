@@ -51,7 +51,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api', routes);
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.json({
     name: 'MERN Platform API',
     version: '1.0.0',
