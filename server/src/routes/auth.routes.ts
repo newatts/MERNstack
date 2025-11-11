@@ -1,5 +1,5 @@
 import express from 'express';
-import { body } from 'express-validator';
+import { body, CustomValidator } from 'express-validator';
 import {
   signup,
   verifyEmail,
@@ -11,14 +11,24 @@ import {
 } from '../controllers/auth.controller';
 import { authenticate, validateRequest } from '../middleware';
 import { verifyCaptchaSignup, verifyCaptchaLogin, checkAccountLockout } from '../middleware/captcha';
+import { validatePassword } from '../utils/passwordValidator';
 
 const router = express.Router();
+
+// Custom password validator
+const isStrongPassword: CustomValidator = (value: string) => {
+  const result = validatePassword(value);
+  if (!result.isValid) {
+    throw new Error(result.errors[0]);
+  }
+  return true;
+};
 
 router.post(
   '/signup',
   [
     body('email').isEmail().normalizeEmail(),
-    body('password').isLength({ min: 8 }),
+    body('password').custom(isStrongPassword),
     body('firstName').trim().notEmpty(),
     body('lastName').trim().notEmpty(),
     validateRequest
@@ -61,7 +71,7 @@ router.post(
   '/reset-password',
   [
     body('token').notEmpty(),
-    body('newPassword').isLength({ min: 8 }),
+    body('newPassword').custom(isStrongPassword),
     validateRequest
   ],
   resetPassword

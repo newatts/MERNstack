@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '@/services/auth.service';
 import { toast } from 'react-hot-toast';
+import { validatePassword, getStrengthColor, getStrengthBgColor } from '@/utils/passwordValidator';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -12,25 +13,37 @@ export default function SignupPage() {
     lastName: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState<ReturnType<typeof validatePassword> | null>(null);
+  const [showPasswordHints, setShowPasswordHints] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
+
+    // Validate password in real-time
+    if (name === 'password') {
+      setPasswordValidation(validatePassword(value));
+      setShowPasswordHints(value.length > 0);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
+    // Validate password
+    const validation = validatePassword(formData.password);
+    if (!validation.isValid) {
+      toast.error('Please fix password requirements before continuing');
+      setShowPasswordHints(true);
       return;
     }
 
-    if (formData.password.length < 8) {
-      toast.error('Password must be at least 8 characters');
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
       return;
     }
 
@@ -134,6 +147,59 @@ export default function SignupPage() {
                 className="input"
                 placeholder="••••••••"
               />
+
+              {/* Password Strength Indicator */}
+              {showPasswordHints && passwordValidation && (
+                <div className="mt-2 space-y-2">
+                  {/* Strength Bar */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${getStrengthBgColor(passwordValidation.strength)}`}
+                        style={{
+                          width: passwordValidation.strength === 'weak' ? '33%' :
+                                 passwordValidation.strength === 'medium' ? '66%' : '100%'
+                        }}
+                      />
+                    </div>
+                    <span className={`text-xs font-medium ${getStrengthColor(passwordValidation.strength)}`}>
+                      {passwordValidation.strength.charAt(0).toUpperCase() + passwordValidation.strength.slice(1)}
+                    </span>
+                  </div>
+
+                  {/* Requirements Checklist */}
+                  <div className="text-xs space-y-1">
+                    <div className={passwordValidation.checks.length ? 'text-green-600' : 'text-gray-500'}>
+                      {passwordValidation.checks.length ? '✓' : '○'} At least 8 characters
+                    </div>
+                    <div className={passwordValidation.checks.uppercase ? 'text-green-600' : 'text-gray-500'}>
+                      {passwordValidation.checks.uppercase ? '✓' : '○'} One uppercase letter
+                    </div>
+                    <div className={passwordValidation.checks.lowercase ? 'text-green-600' : 'text-gray-500'}>
+                      {passwordValidation.checks.lowercase ? '✓' : '○'} One lowercase letter
+                    </div>
+                    <div className={passwordValidation.checks.number ? 'text-green-600' : 'text-gray-500'}>
+                      {passwordValidation.checks.number ? '✓' : '○'} One number
+                    </div>
+                    <div className={passwordValidation.checks.special ? 'text-green-600' : 'text-gray-500'}>
+                      {passwordValidation.checks.special ? '✓' : '○'} One special character (!@#$%...)
+                    </div>
+                    <div className={passwordValidation.checks.noCommon ? 'text-green-600' : 'text-red-500'}>
+                      {passwordValidation.checks.noCommon ? '✓' : '✗'} Not a common password
+                    </div>
+                    <div className={passwordValidation.checks.noSequential ? 'text-green-600' : 'text-red-500'}>
+                      {passwordValidation.checks.noSequential ? '✓' : '✗'} No sequential patterns
+                    </div>
+                  </div>
+
+                  {/* Error Messages */}
+                  {!passwordValidation.isValid && passwordValidation.errors.length > 0 && (
+                    <div className="text-xs text-red-600 mt-2">
+                      {passwordValidation.errors[0]}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div>
