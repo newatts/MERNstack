@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'react-hot-toast';
+import { useCaptcha } from '@/hooks/useCaptcha';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -9,13 +10,25 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuthStore();
   const navigate = useNavigate();
+  const { config: captchaConfig, executeRecaptcha, loading: captchaLoading } = useCaptcha();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      // Execute reCAPTCHA if enabled
+      let captchaToken: string | undefined;
+      if (captchaConfig?.enabled && captchaConfig?.onLogin) {
+        captchaToken = (await executeRecaptcha('login')) || undefined;
+        if (!captchaToken) {
+          toast.error('Failed to verify captcha. Please try again.');
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      await login(email, password, captchaToken);
       toast.success('Login successful!');
       navigate('/dashboard');
     } catch (error: any) {
@@ -84,12 +97,27 @@ export default function LoginPage() {
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || captchaLoading}
               className="w-full btn btn-primary disabled:opacity-50"
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
+
+          {/* reCAPTCHA notice */}
+          {captchaConfig?.enabled && captchaConfig?.onLogin && (
+            <div className="text-xs text-gray-500 text-center">
+              This site is protected by reCAPTCHA and the Google{' '}
+              <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
+                Privacy Policy
+              </a>{' '}
+              and{' '}
+              <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
+                Terms of Service
+              </a>{' '}
+              apply.
+            </div>
+          )}
         </form>
       </div>
     </div>

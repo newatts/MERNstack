@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '@/services/auth.service';
 import { toast } from 'react-hot-toast';
 import { validatePassword, getStrengthColor, getStrengthBgColor } from '@/utils/passwordValidator';
+import { useCaptcha } from '@/hooks/useCaptcha';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ export default function SignupPage() {
   const [passwordValidation, setPasswordValidation] = useState<ReturnType<typeof validatePassword> | null>(null);
   const [showPasswordHints, setShowPasswordHints] = useState(false);
   const navigate = useNavigate();
+  const { config: captchaConfig, executeRecaptcha, loading: captchaLoading } = useCaptcha();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -50,11 +52,23 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
+      // Execute reCAPTCHA if enabled
+      let captchaToken: string | undefined;
+      if (captchaConfig?.enabled && captchaConfig?.onSignup) {
+        captchaToken = (await executeRecaptcha('signup')) || undefined;
+        if (!captchaToken) {
+          toast.error('Failed to verify captcha. Please try again.');
+          setIsLoading(false);
+          return;
+        }
+      }
+
       await authService.signup({
         email: formData.email,
         password: formData.password,
         firstName: formData.firstName,
-        lastName: formData.lastName
+        lastName: formData.lastName,
+        captchaToken
       });
 
       toast.success('Account created! Please check your email to verify your account.');
@@ -222,12 +236,27 @@ export default function SignupPage() {
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || captchaLoading}
               className="w-full btn btn-primary disabled:opacity-50"
             >
               {isLoading ? 'Creating account...' : 'Sign up'}
             </button>
           </div>
+
+          {/* reCAPTCHA notice */}
+          {captchaConfig?.enabled && captchaConfig?.onSignup && (
+            <div className="text-xs text-gray-500 text-center">
+              This site is protected by reCAPTCHA and the Google{' '}
+              <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
+                Privacy Policy
+              </a>{' '}
+              and{' '}
+              <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
+                Terms of Service
+              </a>{' '}
+              apply.
+            </div>
+          )}
         </form>
       </div>
     </div>

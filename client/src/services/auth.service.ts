@@ -7,13 +7,14 @@ export const authService = {
     password: string;
     firstName: string;
     lastName: string;
+    captchaToken?: string;
   }) {
     const response = await api.post('/auth/signup', data);
     return response.data;
   },
 
-  async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await api.post('/auth/login', { email, password });
+  async login(email: string, password: string, captchaToken?: string): Promise<AuthResponse> {
+    const response = await api.post('/auth/login', { email, password, captchaToken });
     const { accessToken, refreshToken, user } = response.data;
 
     localStorage.setItem('accessToken', accessToken);
